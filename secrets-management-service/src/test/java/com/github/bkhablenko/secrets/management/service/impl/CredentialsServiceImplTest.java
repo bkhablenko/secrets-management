@@ -85,4 +85,17 @@ public class CredentialsServiceImplTest {
         assertThat(credentials.getUsername(), is(equalTo(USERNAME)));
         assertThat(credentials.getPassword(), is(equalTo(updatedPassword)));
     }
+
+    @Test(expected = CredentialsNotFoundException.class)
+    public void revokeCredentials_shouldThrowException_ifCredentialsNotFound() {
+        when(credentialsRepository.existsById(any())).thenReturn(false);
+        credentialsService.revokeCredentials(USERNAME);
+    }
+
+    @Test
+    public void revokeCredentials_shouldDeleteExistingEntity_onSuccess() {
+        when(credentialsRepository.existsById(any())).thenReturn(true);
+        credentialsService.revokeCredentials(USERNAME);
+        verify(credentialsRepository).deleteById(USERNAME);
+    }
 }

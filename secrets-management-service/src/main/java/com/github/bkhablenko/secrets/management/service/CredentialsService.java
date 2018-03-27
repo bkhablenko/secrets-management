@@ -9,4 +9,6 @@ public interface CredentialsService {
     Credentials retrieveCredentials(String username);
 
     void updateCredentials(String username, String password);
+
+    void revokeCredentials(String username);
 }

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,5 +56,12 @@ public class CredentialsController {
     public void updateCredentials(@PathVariable String username, @RequestBody @Valid UpdateCredentialsRequest request) {
         logger.debug("Processing request to update credentials with ID: [{}]", username);
         credentialsService.updateCredentials(username, request.getPassword());
+    }
+
+    @DeleteMapping("/{username}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void revokeCredentials(@PathVariable String username) {
+        logger.debug("Processing request to revoke credentials with ID: [{}]", username);
+        credentialsService.revokeCredentials(username);
     }
 }

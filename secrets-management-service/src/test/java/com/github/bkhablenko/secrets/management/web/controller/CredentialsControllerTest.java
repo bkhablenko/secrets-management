@@ -24,6 +24,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -117,6 +118,27 @@ public class CredentialsControllerTest {
         verify(credentialsService).updateCredentials(USERNAME, PASSWORD);
     }
 
+    @Test
+    public void revokeCredentials_204() throws Exception {
+        doNothing().when(credentialsService).revokeCredentials(any());
+
+        mockMvc.perform(revokeCredentials(USERNAME))
+                .andExpect(status().isNoContent());
+
+        verify(credentialsService).revokeCredentials(USERNAME);
+    }
+
+    @Test
+    public void revokeCredentials_404() throws Exception {
+        doThrow(CredentialsNotFoundException.class)
+                .when(credentialsService).revokeCredentials(any());
+
+        mockMvc.perform(revokeCredentials(USERNAME))
+                .andExpect(status().isNotFound());
+
+        verify(credentialsService).revokeCredentials(USERNAME);
+    }
+
     private RequestBuilder storeCredentials(StoreCredentialsRequest request) throws Exception {
         return post("/api/v1/credentials")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -131,6 +153,10 @@ public class CredentialsControllerTest {
         return put("/api/v1/credentials/{username}", username)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(request));
+    }
+
+    private RequestBuilder revokeCredentials(String username) {
+        return delete("/api/v1/credentials/{username}", username);
     }
 
     private StoreCredentialsRequest storeCredentialsRequest(String username, String password) {

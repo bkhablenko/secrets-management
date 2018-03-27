@@ -40,4 +40,12 @@ public class CredentialsServiceImpl implements CredentialsService {
         final Credentials credentials = new Credentials(username, password);
         credentialsRepository.save(credentials);
     }
+
+    @Override
+    public void revokeCredentials(String username) {
+        if (!credentialsRepository.existsById(username)) {
+            throw new CredentialsNotFoundException();
+        }
+        credentialsRepository.deleteById(username);
+    }
 }
