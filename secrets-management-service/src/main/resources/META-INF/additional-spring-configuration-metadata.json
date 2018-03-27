@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "vault.uri",
+      "type": "java.lang.String",
+      "description": "TODO: Add description."
+    },
+    {
+      "name": "vault.token",
+      "type": "java.lang.String",
+      "description": "TODO: Add description."
+    }
+  ]
+}
