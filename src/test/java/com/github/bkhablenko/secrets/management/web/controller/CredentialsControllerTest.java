@@ -28,8 +28,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MoreMockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MoreMockMvcResultMatchers.locationHeader;
+import static org.springframework.test.web.servlet.result.MoreMockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = CredentialsController.class)
@@ -51,12 +53,14 @@ public class CredentialsControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    public void storeCredentials_204() throws Exception {
+    public void storeCredentials_201() throws Exception {
         doNothing().when(credentialsService).storeCredentials(any(), any(), any());
 
         final StoreCredentialsRequest request = storeCredentialsRequest(ID, USERNAME, PASSWORD);
         mockMvc.perform(storeCredentials(request))
-                .andExpect(status().isNoContent());
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(locationHeader().endsWith("/api/v1/credentials/" + ID));
 
         verify(credentialsService).storeCredentials(ID, USERNAME, PASSWORD);
     }
@@ -68,6 +72,7 @@ public class CredentialsControllerTest {
 
         final StoreCredentialsRequest request = storeCredentialsRequest(ID, USERNAME, PASSWORD);
         mockMvc.perform(storeCredentials(request))
+                .andDo(print())
                 .andExpect(status().isConflict());
 
         verify(credentialsService).storeCredentials(ID, USERNAME, PASSWORD);
@@ -79,6 +84,7 @@ public class CredentialsControllerTest {
                 .thenReturn(new Credentials(ID, USERNAME, PASSWORD));
 
         mockMvc.perform(retrieveCredentials(ID))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("username", is(equalTo(USERNAME))))
                 .andExpect(jsonPath("password", is(equalTo(PASSWORD))));
@@ -92,6 +98,7 @@ public class CredentialsControllerTest {
                 .when(credentialsService).retrieveCredentials(any());
 
         mockMvc.perform(retrieveCredentials(ID))
+                .andDo(print())
                 .andExpect(status().isNotFound());
 
         verify(credentialsService).retrieveCredentials(ID);
@@ -103,6 +110,7 @@ public class CredentialsControllerTest {
 
         final UpdateCredentialsRequest request = updateCredentialsRequest(USERNAME, PASSWORD);
         mockMvc.perform(updateCredentials(ID, request))
+                .andDo(print())
                 .andExpect(status().isNoContent());
 
         verify(credentialsService).updateCredentials(ID, USERNAME, PASSWORD);
@@ -115,6 +123,7 @@ public class CredentialsControllerTest {
 
         final UpdateCredentialsRequest request = updateCredentialsRequest(USERNAME, PASSWORD);
         mockMvc.perform(updateCredentials(ID, request))
+                .andDo(print())
                 .andExpect(status().isNotFound());
 
         verify(credentialsService).updateCredentials(ID, USERNAME, PASSWORD);
@@ -125,6 +134,7 @@ public class CredentialsControllerTest {
         doNothing().when(credentialsService).revokeCredentials(any());
 
         mockMvc.perform(revokeCredentials(ID))
+                .andDo(print())
                 .andExpect(status().isNoContent());
 
         verify(credentialsService).revokeCredentials(ID);
@@ -136,6 +146,7 @@ public class CredentialsControllerTest {
                 .when(credentialsService).revokeCredentials(any());
 
         mockMvc.perform(revokeCredentials(ID))
+                .andDo(print())
                 .andExpect(status().isNotFound());
 
         verify(credentialsService).revokeCredentials(ID);

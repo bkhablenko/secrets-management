@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,8 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponents;
 
 import javax.validation.Valid;
+
+import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequestUri;
 
 @RestController
 @RequestMapping("/api/v1/credentials")
@@ -35,13 +39,14 @@ public class CredentialsController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void storeCredentials(@RequestBody @Valid StoreCredentialsRequest request) {
+    public ResponseEntity<?> storeCredentials(@RequestBody @Valid StoreCredentialsRequest request) {
         final String id = request.getId();
         logger.debug("Processing request to store credentials with ID: [{}]", id);
         final String username = request.getUsername();
         final String password = request.getPassword();
         credentialsService.storeCredentials(id, username, password);
+        final UriComponents location = fromCurrentRequestUri().path("/{id}").buildAndExpand(id);
+        return ResponseEntity.created(location.toUri()).build();
     }
 
     @GetMapping("/{id}")
