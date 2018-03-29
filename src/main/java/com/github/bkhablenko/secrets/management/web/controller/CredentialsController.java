@@ -37,31 +37,35 @@ public class CredentialsController {
     @PostMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void storeCredentials(@RequestBody @Valid StoreCredentialsRequest request) {
+        final String id = request.getId();
+        logger.debug("Processing request to store credentials with ID: [{}]", id);
         final String username = request.getUsername();
         final String password = request.getPassword();
-        logger.debug("Processing request to store credentials with ID: [{}]", username);
-        credentialsService.storeCredentials(username, password);
+        credentialsService.storeCredentials(id, username, password);
     }
 
-    @GetMapping("/{username}")
-    public RetrieveCredentialsResponse retrieveCredentials(@PathVariable String username) {
-        logger.debug("Processing request to retrieve credentials with ID: [{}]", username);
-        final Credentials credentials = credentialsService.retrieveCredentials(username);
+    @GetMapping("/{id}")
+    public RetrieveCredentialsResponse retrieveCredentials(@PathVariable String id) {
+        logger.debug("Processing request to retrieve credentials with ID: [{}]", id);
+        final Credentials credentials = credentialsService.retrieveCredentials(id);
+        final String username = credentials.getUsername();
         final String password = credentials.getPassword();
         return new RetrieveCredentialsResponse(username, password);
     }
 
-    @PutMapping("/{username}")
+    @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCredentials(@PathVariable String username, @RequestBody @Valid UpdateCredentialsRequest request) {
-        logger.debug("Processing request to update credentials with ID: [{}]", username);
-        credentialsService.updateCredentials(username, request.getPassword());
+    public void updateCredentials(@PathVariable String id, @RequestBody @Valid UpdateCredentialsRequest request) {
+        logger.debug("Processing request to update credentials with ID: [{}]", id);
+        final String username = request.getUsername();
+        final String password = request.getPassword();
+        credentialsService.updateCredentials(id, username, password);
     }
 
-    @DeleteMapping("/{username}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void revokeCredentials(@PathVariable String username) {
-        logger.debug("Processing request to revoke credentials with ID: [{}]", username);
-        credentialsService.revokeCredentials(username);
+    public void revokeCredentials(@PathVariable String id) {
+        logger.debug("Processing request to revoke credentials with ID: [{}]", id);
+        credentialsService.revokeCredentials(id);
     }
 }

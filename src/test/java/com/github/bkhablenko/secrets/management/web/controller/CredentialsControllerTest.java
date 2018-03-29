@@ -35,7 +35,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = CredentialsController.class)
 public class CredentialsControllerTest {
 
-    private static final String USERNAME = "john.smith";
+    private static final String ID = "gmail";
+
+    private static final String USERNAME = "john.smith@gmail.com";
 
     private static final String PASSWORD = "H3LLo$WoRLD!";
 
@@ -50,38 +52,38 @@ public class CredentialsControllerTest {
 
     @Test
     public void storeCredentials_204() throws Exception {
-        doNothing().when(credentialsService).storeCredentials(any(), any());
+        doNothing().when(credentialsService).storeCredentials(any(), any(), any());
 
-        final StoreCredentialsRequest request = storeCredentialsRequest(USERNAME, PASSWORD);
+        final StoreCredentialsRequest request = storeCredentialsRequest(ID, USERNAME, PASSWORD);
         mockMvc.perform(storeCredentials(request))
                 .andExpect(status().isNoContent());
 
-        verify(credentialsService).storeCredentials(USERNAME, PASSWORD);
+        verify(credentialsService).storeCredentials(ID, USERNAME, PASSWORD);
     }
 
     @Test
     public void storeCredentials_409() throws Exception {
         doThrow(CredentialsAlreadyExistException.class)
-                .when(credentialsService).storeCredentials(any(), any());
+                .when(credentialsService).storeCredentials(any(), any(), any());
 
-        final StoreCredentialsRequest request = storeCredentialsRequest(USERNAME, PASSWORD);
+        final StoreCredentialsRequest request = storeCredentialsRequest(ID, USERNAME, PASSWORD);
         mockMvc.perform(storeCredentials(request))
                 .andExpect(status().isConflict());
 
-        verify(credentialsService).storeCredentials(USERNAME, PASSWORD);
+        verify(credentialsService).storeCredentials(ID, USERNAME, PASSWORD);
     }
 
     @Test
     public void retrieveCredentials_200() throws Exception {
         when(credentialsService.retrieveCredentials(any()))
-                .thenReturn(new Credentials(USERNAME, PASSWORD));
+                .thenReturn(new Credentials(ID, USERNAME, PASSWORD));
 
-        mockMvc.perform(retrieveCredentials(USERNAME))
+        mockMvc.perform(retrieveCredentials(ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("username", is(equalTo(USERNAME))))
                 .andExpect(jsonPath("password", is(equalTo(PASSWORD))));
 
-        verify(credentialsService).retrieveCredentials(USERNAME);
+        verify(credentialsService).retrieveCredentials(ID);
     }
 
     @Test
@@ -89,43 +91,43 @@ public class CredentialsControllerTest {
         doThrow(CredentialsNotFoundException.class)
                 .when(credentialsService).retrieveCredentials(any());
 
-        mockMvc.perform(retrieveCredentials(USERNAME))
+        mockMvc.perform(retrieveCredentials(ID))
                 .andExpect(status().isNotFound());
 
-        verify(credentialsService).retrieveCredentials(USERNAME);
+        verify(credentialsService).retrieveCredentials(ID);
     }
 
     @Test
     public void updateCredentials_204() throws Exception {
-        doNothing().when(credentialsService).updateCredentials(any(), any());
+        doNothing().when(credentialsService).updateCredentials(any(), any(), any());
 
-        final UpdateCredentialsRequest request = updateCredentialsRequest(PASSWORD);
-        mockMvc.perform(updateCredentials(USERNAME, request))
+        final UpdateCredentialsRequest request = updateCredentialsRequest(USERNAME, PASSWORD);
+        mockMvc.perform(updateCredentials(ID, request))
                 .andExpect(status().isNoContent());
 
-        verify(credentialsService).updateCredentials(USERNAME, PASSWORD);
+        verify(credentialsService).updateCredentials(ID, USERNAME, PASSWORD);
     }
 
     @Test
     public void updateCredentials_404() throws Exception {
         doThrow(CredentialsNotFoundException.class)
-                .when(credentialsService).updateCredentials(any(), any());
+                .when(credentialsService).updateCredentials(any(), any(), any());
 
-        final UpdateCredentialsRequest request = updateCredentialsRequest(PASSWORD);
-        mockMvc.perform(updateCredentials(USERNAME, request))
+        final UpdateCredentialsRequest request = updateCredentialsRequest(USERNAME, PASSWORD);
+        mockMvc.perform(updateCredentials(ID, request))
                 .andExpect(status().isNotFound());
 
-        verify(credentialsService).updateCredentials(USERNAME, PASSWORD);
+        verify(credentialsService).updateCredentials(ID, USERNAME, PASSWORD);
     }
 
     @Test
     public void revokeCredentials_204() throws Exception {
         doNothing().when(credentialsService).revokeCredentials(any());
 
-        mockMvc.perform(revokeCredentials(USERNAME))
+        mockMvc.perform(revokeCredentials(ID))
                 .andExpect(status().isNoContent());
 
-        verify(credentialsService).revokeCredentials(USERNAME);
+        verify(credentialsService).revokeCredentials(ID);
     }
 
     @Test
@@ -133,10 +135,10 @@ public class CredentialsControllerTest {
         doThrow(CredentialsNotFoundException.class)
                 .when(credentialsService).revokeCredentials(any());
 
-        mockMvc.perform(revokeCredentials(USERNAME))
+        mockMvc.perform(revokeCredentials(ID))
                 .andExpect(status().isNotFound());
 
-        verify(credentialsService).revokeCredentials(USERNAME);
+        verify(credentialsService).revokeCredentials(ID);
     }
 
     private RequestBuilder storeCredentials(StoreCredentialsRequest request) throws Exception {
@@ -145,29 +147,31 @@ public class CredentialsControllerTest {
                 .content(objectMapper.writeValueAsString(request));
     }
 
-    private RequestBuilder retrieveCredentials(String username) {
-        return get("/api/v1/credentials/{username}", username);
+    private RequestBuilder retrieveCredentials(String id) {
+        return get("/api/v1/credentials/{id}", id);
     }
 
-    private RequestBuilder updateCredentials(String username, UpdateCredentialsRequest request) throws Exception {
-        return put("/api/v1/credentials/{username}", username)
+    private RequestBuilder updateCredentials(String id, UpdateCredentialsRequest request) throws Exception {
+        return put("/api/v1/credentials/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(request));
     }
 
-    private RequestBuilder revokeCredentials(String username) {
-        return delete("/api/v1/credentials/{username}", username);
+    private RequestBuilder revokeCredentials(String id) {
+        return delete("/api/v1/credentials/{id}", id);
     }
 
-    private StoreCredentialsRequest storeCredentialsRequest(String username, String password) {
+    private StoreCredentialsRequest storeCredentialsRequest(String id, String username, String password) {
         final StoreCredentialsRequest instance = new StoreCredentialsRequest();
+        instance.setId(id);
         instance.setUsername(username);
         instance.setPassword(password);
         return instance;
     }
 
-    private UpdateCredentialsRequest updateCredentialsRequest(String password) {
+    private UpdateCredentialsRequest updateCredentialsRequest(String username, String password) {
         final UpdateCredentialsRequest instance = new UpdateCredentialsRequest();
+        instance.setUsername(username);
         instance.setPassword(password);
         return instance;
     }

@@ -4,11 +4,11 @@ import com.github.bkhablenko.secrets.management.domain.Credentials;
 
 public interface CredentialsService {
 
-    void storeCredentials(String username, String password);
+    void storeCredentials(String id, String username, String password);
 
-    Credentials retrieveCredentials(String username);
+    Credentials retrieveCredentials(String id);
 
-    void updateCredentials(String username, String password);
+    void updateCredentials(String id, String username, String password);
 
-    void revokeCredentials(String username);
+    void revokeCredentials(String id);
 }

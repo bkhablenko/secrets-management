@@ -6,6 +6,10 @@ import javax.validation.constraints.NotBlank;
 
 public class StoreCredentialsRequest {
 
+    @JsonProperty("id")
+    @NotBlank
+    private String id;
+
     @JsonProperty("username")
     @NotBlank
     private String username;
@@ -13,6 +17,14 @@ public class StoreCredentialsRequest {
     @JsonProperty("password")
     @NotBlank
     private String password;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getUsername() {
         return username;

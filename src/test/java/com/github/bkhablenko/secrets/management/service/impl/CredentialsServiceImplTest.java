@@ -21,7 +21,9 @@ import static org.mockito.Mockito.when;
 
 public class CredentialsServiceImplTest {
 
-    private static final String USERNAME = "john.smith";
+    private static final String ID = "gmail";
+
+    private static final String USERNAME = "john.smith@gmail.com";
 
     private static final String PASSWORD = "H3LLo$WoRLD!";
 
@@ -29,24 +31,25 @@ public class CredentialsServiceImplTest {
 
     private final CredentialsServiceImpl credentialsService = new CredentialsServiceImpl(credentialsRepository);
 
-    private static Optional<Credentials> credentials(String username, String password) {
-        return Optional.of(new Credentials(username, password));
+    private static Optional<Credentials> credentials(String id, String username, String password) {
+        return Optional.of(new Credentials(id, username, password));
     }
 
     @Test(expected = CredentialsAlreadyExistException.class)
     public void storeCredentials_shouldThrowException_ifCredentialsAlreadyExist() {
         when(credentialsRepository.existsById(any())).thenThrow(new CredentialsAlreadyExistException());
-        credentialsService.storeCredentials(USERNAME, PASSWORD);
+        credentialsService.storeCredentials(ID, USERNAME, PASSWORD);
     }
 
     @Test
     public void storeCredentials_shouldPersistNewEntity_onSuccess() {
         when(credentialsRepository.existsById(any())).thenReturn(false);
-        credentialsService.storeCredentials(USERNAME, PASSWORD);
+        credentialsService.storeCredentials(ID, USERNAME, PASSWORD);
         final ArgumentCaptor<Credentials> arg = ArgumentCaptor.forClass(Credentials.class);
         verify(credentialsRepository).save(arg.capture());
         final Credentials credentials = arg.getValue();
         assertThat(credentials, is(notNullValue()));
+        assertThat(credentials.getId(), is(equalTo(ID)));
         assertThat(credentials.getUsername(), is(equalTo(USERNAME)));
         assertThat(credentials.getPassword(), is(equalTo(PASSWORD)));
     }
@@ -54,14 +57,14 @@ public class CredentialsServiceImplTest {
     @Test(expected = CredentialsNotFoundException.class)
     public void retrieveCredentials_shouldThrowException_ifCredentialsNotFound() {
         when(credentialsRepository.findById(any())).thenReturn(Optional.empty());
-        credentialsService.retrieveCredentials(USERNAME);
+        credentialsService.retrieveCredentials(ID);
     }
 
     @Test
     public void retrieveCredentials_shouldReturnExistingEntity_onSuccess() {
-        when(credentialsRepository.findById(any())).thenReturn(credentials(USERNAME, PASSWORD));
-        final Credentials credentials = credentialsService.retrieveCredentials(USERNAME);
-        verify(credentialsRepository).findById(USERNAME);
+        when(credentialsRepository.findById(any())).thenReturn(credentials(ID, USERNAME, PASSWORD));
+        final Credentials credentials = credentialsService.retrieveCredentials(ID);
+        verify(credentialsRepository).findById(ID);
         assertThat(credentials, is(notNullValue()));
         assertThat(credentials.getUsername(), is(equalTo(USERNAME)));
         assertThat(credentials.getPassword(), is(equalTo(PASSWORD)));
@@ -70,18 +73,20 @@ public class CredentialsServiceImplTest {
     @Test(expected = CredentialsNotFoundException.class)
     public void updateCredentials_shouldThrowException_ifCredentialsNotFound() {
         when(credentialsRepository.existsById(any())).thenReturn(false);
-        credentialsService.updateCredentials(USERNAME, StringUtils.reverse(PASSWORD));
+        final String updatedPassword = StringUtils.reverse(PASSWORD);
+        credentialsService.updateCredentials(ID, USERNAME, updatedPassword);
     }
 
     @Test
     public void updateCredentials_shouldUpdateExistingEntity_onSuccess() {
         when(credentialsRepository.existsById(any())).thenReturn(true);
         final String updatedPassword = StringUtils.reverse(PASSWORD);
-        credentialsService.updateCredentials(USERNAME, updatedPassword);
+        credentialsService.updateCredentials(ID, USERNAME, updatedPassword);
         final ArgumentCaptor<Credentials> arg = ArgumentCaptor.forClass(Credentials.class);
         verify(credentialsRepository).save(arg.capture());
         final Credentials credentials = arg.getValue();
         assertThat(credentials, is(notNullValue()));
+        assertThat(credentials.getId(), is(equalTo(ID)));
         assertThat(credentials.getUsername(), is(equalTo(USERNAME)));
         assertThat(credentials.getPassword(), is(equalTo(updatedPassword)));
     }
@@ -89,13 +94,13 @@ public class CredentialsServiceImplTest {
     @Test(expected = CredentialsNotFoundException.class)
     public void revokeCredentials_shouldThrowException_ifCredentialsNotFound() {
         when(credentialsRepository.existsById(any())).thenReturn(false);
-        credentialsService.revokeCredentials(USERNAME);
+        credentialsService.revokeCredentials(ID);
     }
 
     @Test
     public void revokeCredentials_shouldDeleteExistingEntity_onSuccess() {
         when(credentialsRepository.existsById(any())).thenReturn(true);
-        credentialsService.revokeCredentials(USERNAME);
-        verify(credentialsRepository).deleteById(USERNAME);
+        credentialsService.revokeCredentials(ID);
+        verify(credentialsRepository).deleteById(ID);
     }
 }

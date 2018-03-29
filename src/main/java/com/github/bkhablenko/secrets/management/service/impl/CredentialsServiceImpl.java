@@ -19,33 +19,33 @@ public class CredentialsServiceImpl implements CredentialsService {
     }
 
     @Override
-    public void storeCredentials(String username, String password) {
-        if (credentialsRepository.existsById(username)) {
+    public void storeCredentials(String id, String username, String password) {
+        if (credentialsRepository.existsById(id)) {
             throw new CredentialsAlreadyExistException();
         }
-        final Credentials credentials = new Credentials(username, password);
+        final Credentials credentials = new Credentials(id, username, password);
         credentialsRepository.save(credentials);
     }
 
     @Override
-    public Credentials retrieveCredentials(String username) {
-        return credentialsRepository.findById(username).orElseThrow(CredentialsNotFoundException::new);
+    public Credentials retrieveCredentials(String id) {
+        return credentialsRepository.findById(id).orElseThrow(CredentialsNotFoundException::new);
     }
 
     @Override
-    public void updateCredentials(String username, String password) {
-        if (!credentialsRepository.existsById(username)) {
+    public void updateCredentials(String id, String username, String password) {
+        if (!credentialsRepository.existsById(id)) {
             throw new CredentialsNotFoundException();
         }
-        final Credentials credentials = new Credentials(username, password);
+        final Credentials credentials = new Credentials(id, username, password);
         credentialsRepository.save(credentials);
     }
 
     @Override
-    public void revokeCredentials(String username) {
-        if (!credentialsRepository.existsById(username)) {
+    public void revokeCredentials(String id) {
+        if (!credentialsRepository.existsById(id)) {
             throw new CredentialsNotFoundException();
         }
-        credentialsRepository.deleteById(username);
+        credentialsRepository.deleteById(id);
     }
 }

@@ -6,9 +6,21 @@ import javax.validation.constraints.NotBlank;
 
 public class UpdateCredentialsRequest {
 
+    @JsonProperty("username")
+    @NotBlank
+    private String username;
+
     @JsonProperty("password")
     @NotBlank
     private String password;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public String getPassword() {
         return password;
