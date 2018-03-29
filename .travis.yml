@@ -14,9 +14,8 @@ before_install:
   - sudo apt-get -y install docker-ce
   - docker --version
 
-after_success:
-  - mvn package dockerfile:build
-  - mvn dockerfile:tag
+script:
+  - mvn clean package dockerfile:build
 
 cache:
   directories:
